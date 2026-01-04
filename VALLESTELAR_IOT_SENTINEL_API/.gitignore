@@ -1,0 +1,55 @@
+# Entorno virtual (Windows y Unix)
+venv/
+.venv/
+
+# Archivos temporales de Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Archivos de entorno
+.env
+
+
+# Configuración del editor
+.vscode/
+*.code-workspace
+
+# Archivos de logs y debugging
+*.log
+
+# Docker
+*.tar
+*.img
+*.container
+docker-compose.override.yml
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+terraform.tfvars
+terraform.tfvars.json
+crash.log
+
+# Byte-compiled files
+*.swp
+*.bak
+*.tmp
+*.old
+
+# Jupyter notebooks (si usas)
+.ipynb_checkpoints/
+
+# IDEs
+.idea/
+*.iml
+.DS_Store
+
+# Archivos de compilación o cache
+*.egg-info/
+dist/
+build/
+
+# Database migration files
+migrations/
