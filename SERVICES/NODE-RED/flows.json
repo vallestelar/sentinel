@@ -1,0 +1,614 @@
+[
+    {
+        "id": "9771d2b25c383875",
+        "type": "tab",
+        "label": "Demo MQTT + Control Servicios + Anomalía",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "bkr-localhost",
+        "type": "mqtt-broker",
+        "name": "Local MQTT",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "sessionExpiry": ""
+    },
+    {
+        "id": "ui_tab_main",
+        "type": "ui_tab",
+        "name": "Panel",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "ui_grp_sim",
+        "type": "ui_group",
+        "name": "Simulador",
+        "tab": "ui_tab_main",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "ui_grp_srv",
+        "type": "ui_group",
+        "name": "Servicios",
+        "tab": "ui_tab_main",
+        "order": 2,
+        "disp": true,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "07fdd21a20e8826d",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-light",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#0094CE",
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#fafafa",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#1bbfff",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#0094ce",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey",
+                "palette": "light"
+            }
+        },
+        "site": {
+            "name": "Node-RED Dashboard",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD/MM/YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "ccad824535857bd5",
+        "type": "inject",
+        "z": "9771d2b25c383875",
+        "name": "Ticker 2s",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "2",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "0.2",
+        "topic": "",
+        "payload": "",
+        "payloadType": "str",
+        "x": 160,
+        "y": 140,
+        "wires": [
+            [
+                "68f7aa4cffa439e8"
+            ]
+        ]
+    },
+    {
+        "id": "68f7aa4cffa439e8",
+        "type": "function",
+        "z": "9771d2b25c383875",
+        "name": "Generar payload (Sensor CBM)",
+        "func": "// Solo publica si el simulador está habilitado\nlet enabled = flow.get('simEnabled') || false;\nif (!enabled) return null;\n\n// ¿Hay anomalía forzada? (one-shot)\nlet forceAnomaly = flow.get('forceAnomaly') || false;\n\nfunction rnd(min, max, dec=2) {\n    return +(Math.random() * (max - min) + min).toFixed(dec);\n}\n\n// Determinar temperaturas según anomalía\nlet temp, tempExt;\nif (forceAnomaly) {\n    temp = rnd(80, 120);       // pico de temperatura\n    tempExt = rnd(80, 120);\n    flow.set('forceAnomaly', false); // consumimos la anomalía\n} else {\n    temp = rnd(20, 30);\n    tempExt = rnd(20, 30);\n}\n\nconst payload = {\n    nodeId: 0,\n    firmware: 20,\n    battery: \"3.28\",\n    battery_percent: \"98.56\",\n    counter: (flow.get('counter') || 0) + 1,\n    sensor_type: 82,\n    sensor_data: {\n        mode: 0,\n        odr: \"3200Hz\",\n        temperature: temp,\n        Ext_temperature: tempExt,\n        Current: 0,\n        x_rms_ACC_G: 0,\n        x_max_ACC_G: 0,\n        x_velocity_mm_sec: 0,\n        x_displacement_mm: 0,\n        x_peak_one_Hz: 0,\n        x_peak_two_Hz: 0,\n        x_peak_three_Hz: 0,\n        y_rms_ACC_G: 0,\n        y_max_ACC_G: 0,\n        y_velocity_mm_sec: 0,\n        y_displacement_mm: 0,\n        y_peak_one_Hz: 0,\n        y_peak_two_Hz: 0,\n        y_peak_three_Hz: 0,\n        z_rms_ACC_G: 0,\n        z_max_ACC_G: 0,\n        z_velocity_mm_sec: 0,\n        z_displacement_mm: 0,\n        z_peak_one_Hz: 0,\n        z_peak_two_Hz: 0,\n        z_peak_three_Hz: 0\n    },\n    sensor_name: \"Condition Based/Predictive Maintenance Sensor\",\n    type: \"sensor_data\",\n    addr: \"00:13:a2:00:42:61:a5:59\",\n    received: Date.now(),\n    original: {},\n    anomaly: forceAnomaly // útil para trazabilidad\n};\n\nflow.set('counter', payload.counter);\n\nmsg.topic = \"sensores/demo\";\nmsg.payload = JSON.stringify(payload);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 440,
+        "y": 140,
+        "wires": [
+            [
+                "3f0324eec2434b03",
+                "64ca8b448bfcc73e",
+                "d9a79c3227a49b39"
+            ]
+        ]
+    },
+    {
+        "id": "3f0324eec2434b03",
+        "type": "mqtt out",
+        "z": "9771d2b25c383875",
+        "name": "Publicar a MQTT",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "bkr-localhost",
+        "x": 720,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "64ca8b448bfcc73e",
+        "type": "debug",
+        "z": "9771d2b25c383875",
+        "name": "Debug payload",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 740,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "a07e21676169c482",
+        "type": "ui_switch",
+        "z": "9771d2b25c383875",
+        "name": "Simulador ON/OFF",
+        "label": "Simulador",
+        "tooltip": "",
+        "group": "ui_grp_sim",
+        "order": 1,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "decouple": "false",
+        "topic": "",
+        "style": "",
+        "onvalue": "true",
+        "onvalueType": "bool",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "false",
+        "offvalueType": "bool",
+        "officon": "",
+        "offcolor": "",
+        "animate": true,
+        "x": 170,
+        "y": 60,
+        "wires": [
+            [
+                "c369592e5deeff10"
+            ]
+        ]
+    },
+    {
+        "id": "c369592e5deeff10",
+        "type": "function",
+        "z": "9771d2b25c383875",
+        "name": "Guardar estado simulador",
+        "func": "flow.set('simEnabled', msg.payload === true);\nmsg.payload = flow.get('simEnabled') ? \"Simulador: ON\" : \"Simulador: OFF\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 440,
+        "y": 60,
+        "wires": [
+            [
+                "8d93431abb0c353e"
+            ]
+        ]
+    },
+    {
+        "id": "8d93431abb0c353e",
+        "type": "ui_text",
+        "z": "9771d2b25c383875",
+        "group": "ui_grp_sim",
+        "order": 2,
+        "width": 6,
+        "height": 1,
+        "name": "Estado",
+        "label": "",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 720,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "d9a79c3227a49b39",
+        "type": "ui_text",
+        "z": "9771d2b25c383875",
+        "group": "ui_grp_sim",
+        "order": 4,
+        "width": 12,
+        "height": 2,
+        "name": "Último mensaje",
+        "label": "Último publicado",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 740,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "a64c7ce8c1729183",
+        "type": "ui_button",
+        "z": "9771d2b25c383875",
+        "name": "Enviar anomalía",
+        "group": "ui_grp_sim",
+        "order": 3,
+        "width": 6,
+        "height": 1,
+        "passthru": false,
+        "label": "Enviar anomalía (pico temp)",
+        "tooltip": "Fuerza un pico en el siguiente mensaje",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "warning",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "",
+        "topicType": "str",
+        "x": 170,
+        "y": 100,
+        "wires": [
+            [
+                "18ca34fdc8fd7e80"
+            ]
+        ]
+    },
+    {
+        "id": "18ca34fdc8fd7e80",
+        "type": "function",
+        "z": "9771d2b25c383875",
+        "name": "Marcar anomalía one-shot",
+        "func": "flow.set('forceAnomaly', true);\nmsg.payload = \"Anomalía programada para el siguiente envío: \" + new Date().toLocaleTimeString();\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 440,
+        "y": 100,
+        "wires": [
+            [
+                "69a4b6075ada2708"
+            ]
+        ]
+    },
+    {
+        "id": "69a4b6075ada2708",
+        "type": "ui_text",
+        "z": "9771d2b25c383875",
+        "group": "ui_grp_sim",
+        "order": 5,
+        "width": 12,
+        "height": 1,
+        "name": "Estado anomalía",
+        "label": "",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 720,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "50c0e2f78d5ced0e",
+        "type": "ui_button",
+        "z": "9771d2b25c383875",
+        "name": "Start Mosquitto",
+        "group": "ui_grp_srv",
+        "order": 1,
+        "width": 3,
+        "height": 1,
+        "passthru": false,
+        "label": "Iniciar Mosquitto",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "play_arrow",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "",
+        "x": 160,
+        "y": 320,
+        "wires": [
+            [
+                "89719e03a870ba25"
+            ]
+        ]
+    },
+    {
+        "id": "3dafa7946deef513",
+        "type": "ui_button",
+        "z": "9771d2b25c383875",
+        "name": "Stop Mosquitto",
+        "group": "ui_grp_srv",
+        "order": 2,
+        "width": 3,
+        "height": 1,
+        "passthru": false,
+        "label": "Detener Mosquitto",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "stop",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "",
+        "x": 160,
+        "y": 360,
+        "wires": [
+            [
+                "8192565290307e07"
+            ]
+        ]
+    },
+    {
+        "id": "25a7d4858dc50f7c",
+        "type": "ui_button",
+        "z": "9771d2b25c383875",
+        "name": "Start Telegraf",
+        "group": "ui_grp_srv",
+        "order": 3,
+        "width": 3,
+        "height": 1,
+        "passthru": false,
+        "label": "Iniciar Telegraf",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "play_arrow",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "",
+        "x": 170,
+        "y": 420,
+        "wires": [
+            [
+                "6507f73c04b25f47"
+            ]
+        ]
+    },
+    {
+        "id": "29673302bdb78cd6",
+        "type": "ui_button",
+        "z": "9771d2b25c383875",
+        "name": "Stop Telegraf",
+        "group": "ui_grp_srv",
+        "order": 4,
+        "width": 3,
+        "height": 1,
+        "passthru": false,
+        "label": "Detener Telegraf",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "stop",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "",
+        "x": 170,
+        "y": 460,
+        "wires": [
+            [
+                "a089c6d0a50e69d1"
+            ]
+        ]
+    },
+    {
+        "id": "89719e03a870ba25",
+        "type": "exec",
+        "z": "9771d2b25c383875",
+        "command": "cmd",
+        "addpay": false,
+        "append": "/c net start mosquitto",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "net start mosquitto",
+        "x": 430,
+        "y": 320,
+        "wires": [
+            [
+                "b3526db6c3ed84fc"
+            ],
+            [
+                "b3526db6c3ed84fc"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "8192565290307e07",
+        "type": "exec",
+        "z": "9771d2b25c383875",
+        "command": "cmd",
+        "addpay": false,
+        "append": "/c net stop mosquitto",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "net stop mosquitto",
+        "x": 430,
+        "y": 360,
+        "wires": [
+            [
+                "b3526db6c3ed84fc"
+            ],
+            [
+                "b3526db6c3ed84fc"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "6507f73c04b25f47",
+        "type": "exec",
+        "z": "9771d2b25c383875",
+        "command": "cmd",
+        "addpay": false,
+        "append": "/c net start telegraf",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "net start telegraf",
+        "x": 440,
+        "y": 420,
+        "wires": [
+            [
+                "b3526db6c3ed84fc"
+            ],
+            [
+                "b3526db6c3ed84fc"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "a089c6d0a50e69d1",
+        "type": "exec",
+        "z": "9771d2b25c383875",
+        "command": "cmd",
+        "addpay": false,
+        "append": "/c net stop telegraf",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "net stop telegraf",
+        "x": 440,
+        "y": 460,
+        "wires": [
+            [
+                "b3526db6c3ed84fc"
+            ],
+            [
+                "b3526db6c3ed84fc"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "b3526db6c3ed84fc",
+        "type": "ui_text",
+        "z": "9771d2b25c383875",
+        "group": "ui_grp_srv",
+        "order": 5,
+        "width": 12,
+        "height": 2,
+        "name": "Salida comandos",
+        "label": "Salida",
+        "format": "STDOUT: {{msg.payload}}  STDERR: {{msg.stderr}}",
+        "layout": "col-center",
+        "x": 740,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "cc33d36fa4a7922f",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-dashboard": "3.6.6"
+        }
+    }
+]
