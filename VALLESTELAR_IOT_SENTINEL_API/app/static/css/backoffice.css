@@ -498,3 +498,35 @@
   border-color: #3b90e6;
   color: #0f1e33;
 }
+
+/* Overlay spinner encima de la tabla */
+.bo-table-wrap {
+  position: relative;
+}
+
+.bo-table-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 30, 55, 0.55); /* azul oscuro translúcido */
+  backdrop-filter: blur(2px);
+  z-index: 20;
+}
+
+.bo-table-overlay-card {
+  background: rgba(20, 42, 69, 0.94); /* surface azul */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 180px;
+  color: #e7eff8; /* texto claro */
+}
+
+.bo-app .text-muted {
+  color: #a9bdd6 !important; /* azul grisáceo suave */
+}
