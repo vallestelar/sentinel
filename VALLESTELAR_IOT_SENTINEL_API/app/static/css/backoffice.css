@@ -260,3 +260,241 @@
 .bo-app .dash-table tbody tr:hover {
   background-color: rgba(79, 163, 255, 0.06);
 }
+/* ==========================================================================
+   TABULATOR DARK (AZUL) (FIXED + HOVER SUTIL)
+   - Mismo diseño que el proyecto anterior (verde) pero con paleta azul
+   ========================================================================== */
+
+.bo-app .tabulator {
+  background-color: #142a45; /* surface azul oscuro */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e7eff8; /* texto principal */
+}
+
+/* ✅ IMPORTANTE: quitar el fondo blanco que estaba forzando */
+.bo-app .tabulator .tabulator-tableholder .tabulator-table {
+  background-color: transparent;
+}
+
+/* Header */
+.bo-app .tabulator .tabulator-header {
+  background-color: #102a4a; /* header azul más profundo */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.bo-app .tabulator .tabulator-header .tabulator-col,
+.bo-app .tabulator .tabulator-header .tabulator-col-title {
+  color: #d6e6f7;            /* título claro */
+  background-color: #102a4a; /* mismo fondo que header */
+}
+
+/* Rows */
+.bo-app .tabulator .tabulator-row {
+  background-color: #142a45;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+  transition: background-color 0.15s ease;
+}
+
+.bo-app .tabulator .tabulator-row.tabulator-row-even {
+  background-color: #13263f; /* alterno sutil */
+}
+
+/* Cells (texto siempre visible) */
+.bo-app .tabulator .tabulator-cell {
+  color: #e7eff8 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.bo-app .tabulator .tabulator-cell * {
+  color: inherit !important;
+}
+
+/* Hover sutil + indicador azul */
+.bo-app .tabulator .tabulator-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background-color: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.bo-app .tabulator .tabulator-row:hover {
+  background-color: rgba(0, 0, 0, 0.15) !important; /* igual que antes */
+}
+
+.bo-app .tabulator .tabulator-row:hover::before {
+  background-color: #4fa3ff; /* azul acento */
+}
+
+/* Selected */
+.bo-app .tabulator .tabulator-row.tabulator-selected {
+  background-color: rgba(79, 163, 255, 0.18) !important; /* selección azul */
+}
+
+/* Footer / pagination */
+.bo-app .tabulator .tabulator-footer {
+  background-color: #102a4a;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: #d2e3f5;
+}
+
+.bo-app .tabulator .tabulator-footer .tabulator-page,
+.bo-app .tabulator .tabulator-footer .tabulator-pages button {
+  color: #d2e3f5 !important;
+}
+
+.bo-app .tabulator .tabulator-footer .tabulator-pages button {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  padding: 4px 10px;
+}
+
+.bo-app .tabulator .tabulator-footer .tabulator-pages button:hover {
+  background: rgba(79, 163, 255, 0.12);
+  border-color: rgba(79, 163, 255, 0.35);
+}
+
+.bo-app .tabulator .tabulator-footer .tabulator-pages button.active {
+  background: rgba(79, 163, 255, 0.18);
+  border-color: rgba(79, 163, 255, 0.45);
+}
+
+/* ==========================================================================
+   TABULATOR ROW ACTIONS
+   ========================================================================== */
+
+.bo-row-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.bo-action-btn {
+  background: transparent;
+  border: 0;
+  padding: 4px 6px;
+  border-radius: 6px;
+  color: #9fbfb0;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.bo-action-btn i {
+  font-size: 0.95rem;
+}
+
+.bo-action-btn:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #e6f2ec;
+}
+
+.bo-action-btn.edit:hover {
+  background-color: rgba(95, 178, 138, 0.18);
+  color: #5fb28a;
+}
+
+.bo-action-btn.delete:hover {
+  background-color: rgba(220, 53, 69, 0.18);
+  color: #dc3545;
+}
+
+
+/* ======================================================
+   CONFIRM MODAL – Dark clean style
+   ====================================================== */
+
+.bo-confirm-surface {
+  background: linear-gradient(145deg, #1e332a, #162a22);
+  color: #e6f2ec;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Texto del mensaje */
+.bo-confirm-text {
+  color: #e6f2ec;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+/* Título */
+#boConfirmTitle {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* Botón cancelar */
+.bo-confirm-surface .btn-outline-secondary {
+  color: #cfe5db;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.bo-confirm-surface .btn-outline-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e6f2ec;
+}
+
+/* Botón eliminar (más elegante, menos chillón) */
+.bo-confirm-surface .btn-danger {
+  background-color: #c94a4a;
+  border-color: #c94a4a;
+}
+
+.bo-confirm-surface .btn-danger:hover {
+  background-color: #b53f3f;
+  border-color: #b53f3f;
+}
+
+/* ======================================================
+   CONFIRM MODAL – Dark blue clean style
+   ====================================================== */
+
+.bo-confirm-surface {
+  background: linear-gradient(145deg, #142a45, #10263d); /* azul profundo */
+  color: #e7eff8; /* texto principal */
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Texto del mensaje */
+.bo-confirm-text {
+  color: #e7eff8;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+/* Título */
+#tenantsConfirmTitle,
+#boConfirmTitle {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* Botón cancelar */
+.bo-confirm-surface .btn-outline-secondary {
+  color: #cfe0f5; /* azul claro apagado */
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.bo-confirm-surface .btn-outline-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e7eff8;
+}
+
+/* Botón eliminar (elegante, sin estridencias) */
+.bo-confirm-surface .btn-danger {
+  background-color: #4fa3ff;  /* azul acento */
+  border-color: #4fa3ff;
+  color: #0f1e33;
+}
+
+.bo-confirm-surface .btn-danger:hover {
+  background-color: #3b90e6;  /* azul acento hover */
+  border-color: #3b90e6;
+  color: #0f1e33;
+}

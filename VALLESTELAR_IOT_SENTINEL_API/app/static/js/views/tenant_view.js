@@ -1,9 +1,9 @@
 /* ======================================================
    TENANTS VIEW
    - CRUD básico
-   - Tabulator
+   - Tabulator + search (igual patrón assetsView)
    - Modal create/edit
-   - Confirm delete
+   - Confirm delete modal custom (igual patrón assetsView)
    ====================================================== */
 
 let _tenantsTableOverlayEl = null;
@@ -27,7 +27,7 @@ function setButtonLoading(btn, isLoading, loadingText = "Guardando...") {
     btn.dataset._originalText = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = `
-      <span class="spinner-border spinner-border-sm me-2"></span>
+      <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
       ${loadingText}
     `;
   } else {
@@ -47,46 +47,78 @@ function safeJsonParse(str) {
 }
 
 /* =========================
-   Confirm modal
+   Confirm modal (igual assetsView)
    ========================= */
 
 function tenantsConfirmModalHtml() {
   return `
-  <div class="modal fade" id="tenantsConfirmModal" tabindex="-1">
+  <div class="modal fade" id="tenantsConfirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content bo-confirm-surface">
         <div class="modal-header border-0 pb-1">
-          <h5 class="modal-title text-light" id="tenantsConfirmTitle">Confirmar</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          <h5 class="modal-title text-light" id="tenantsConfirmTitle">Confirmar acción</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body pt-2">
-          <div id="tenantsConfirmMessage">¿Seguro?</div>
+          <div id="tenantsConfirmMessage" class="bo-confirm-text">¿Seguro?</div>
         </div>
-        <div class="modal-footer border-0">
-          <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button class="btn btn-danger" id="tenantsConfirmOk">Eliminar</button>
+        <div class="modal-footer border-0 pt-1">
+          <button type="button" class="btn btn-outline-secondary" id="tenantsConfirmCancel" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+          <button type="button" class="btn btn-danger" id="tenantsConfirmOk">
+            Eliminar
+          </button>
         </div>
       </div>
     </div>
-  </div>`;
+  </div>
+  `;
 }
 
-function showTenantsConfirm({ title, message } = {}) {
+function showTenantsConfirm({ title, message, okText, cancelText } = {}) {
   const modalEl = document.getElementById("tenantsConfirmModal");
-  document.getElementById("tenantsConfirmTitle").textContent = title || "Confirmar";
+  if (!modalEl) throw new Error("tenantsConfirmModal no está en el DOM");
+
+  document.getElementById("tenantsConfirmTitle").textContent = title || "Confirmar acción";
   document.getElementById("tenantsConfirmMessage").textContent = message || "¿Seguro?";
 
   const btnOk = document.getElementById("tenantsConfirmOk");
+  const btnCancel = document.getElementById("tenantsConfirmCancel");
 
-  _tenantsConfirmModalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+  btnOk.textContent = okText || "Aceptar";
+  btnCancel.textContent = cancelText || "Cancelar";
+
+  _tenantsConfirmModalInstance = bootstrap.Modal.getOrCreateInstance(modalEl, {
+    backdrop: true,
+    keyboard: true,
+    focus: true,
+  });
 
   return new Promise((resolve) => {
-    const onOk = () => {
+    let resolved = false;
+
+    const cleanup = () => {
       btnOk.removeEventListener("click", onOk);
+      modalEl.removeEventListener("hidden.bs.modal", onHidden);
+    };
+
+    const onOk = () => {
+      resolved = true;
+      cleanup();
       _tenantsConfirmModalInstance.hide();
       resolve(true);
     };
+
+    const onHidden = () => {
+      if (!resolved) {
+        cleanup();
+        resolve(false);
+      }
+    };
+
     btnOk.addEventListener("click", onOk);
+    modalEl.addEventListener("hidden.bs.modal", onHidden);
     _tenantsConfirmModalInstance.show();
   });
 }
@@ -102,12 +134,22 @@ async function renderTenantsView(container) {
       <button class="btn btn-primary btn-sm" id="btnCreateTenant">Crear</button>
     </div>
 
+    <!-- ✅ Buscador (igual patrón assetsView) -->
+    <div class="mb-3">
+      <input
+        type="text"
+        id="tenantsSearch"
+        class="form-control form-control-sm"
+        placeholder="Buscar por ID, name, rut, plan, status…"
+      />
+    </div>
+
     <div class="bo-table-wrap">
       <div id="tenantsTable"></div>
 
-      <div class="bo-table-overlay d-none" id="tenantsTableOverlay">
+      <div class="bo-table-overlay d-none" id="tenantsTableOverlay" aria-live="polite">
         <div class="bo-table-overlay-card">
-          <div class="spinner-border"></div>
+          <div class="spinner-border" role="status" aria-hidden="true"></div>
           <div class="mt-2 small text-muted" data-role="label">Cargando...</div>
         </div>
       </div>
@@ -120,11 +162,13 @@ async function renderTenantsView(container) {
   _tenantsTableOverlayEl = document.getElementById("tenantsTableOverlay");
 
   const token = localStorage.getItem("access_token");
-  setTenantsTableLoading(true);
+  setTenantsTableLoading(true, "Cargando tabla...");
 
   const table = new Tabulator("#tenantsTable", {
     height: "520px",
     layout: "fitColumns",
+    resizableColumnFit: true,
+    columnMinWidth: 90,
 
     ajaxURL: `${API_BASE}/tenants/`,
     ajaxConfig: {
@@ -141,7 +185,7 @@ async function renderTenantsView(container) {
       { title: "ID", field: "id", width: 260 },
       { title: "Name", field: "name", widthGrow: 1 },
       { title: "RUT", field: "rut", width: 140 },
-      { title: "Plan", field: "plan", width: 120 },
+      { title: "Plan", field: "plan", width: 140 },
       { title: "Status", field: "status", width: 120 },
       {
         title: "Acciones",
@@ -153,25 +197,54 @@ async function renderTenantsView(container) {
     ],
   });
 
+  table.on("dataLoading", () => setTenantsTableLoading(true, "Cargando tabla..."));
   table.on("dataLoaded", () => setTenantsTableLoading(false));
-  table.on("dataLoadError", () => setTenantsTableLoading(false, "Error"));
+  table.on("dataLoadError", () => setTenantsTableLoading(false, "Error al cargar"));
 
   window._tenantsTable = table;
 
-  document.getElementById("btnCreateTenant").onclick = () => openTenantModal();
+  // ✅ Search filter (igual patrón assetsView)
+  const searchInput = document.getElementById("tenantsSearch");
+  searchInput.addEventListener("input", () => {
+    const q = (searchInput.value || "").trim().toLowerCase();
+    if (!q) return table.clearFilter();
+
+    table.setFilter((data) => {
+      const id = (data.id || "").toLowerCase();
+      const name = (data.name || "").toLowerCase();
+      const rut = (data.rut || "").toLowerCase();
+      const plan = (data.plan || "").toLowerCase();
+      const status = (data.status || "").toLowerCase();
+
+      return (
+        id.includes(q) ||
+        name.includes(q) ||
+        rut.includes(q) ||
+        plan.includes(q) ||
+        status.includes(q)
+      );
+    });
+  });
+
+  document.getElementById("btnCreateTenant").addEventListener("click", () => openTenantModal());
+}
+
+/* Alias por si su app llama renderTenants */
+function renderTenants(container) {
+  return renderTenantsView(container);
 }
 
 /* =========================
-   Actions
+   Actions (igual assetsView)
    ========================= */
 
 function tenantsActionsFormatter() {
   return `
     <div class="bo-row-actions">
-      <button class="bo-action-btn edit" data-action="edit">
+      <button class="bo-action-btn edit" data-action="edit" title="Editar">
         <i class="bi bi-pencil"></i>
       </button>
-      <button class="bo-action-btn delete" data-action="delete">
+      <button class="bo-action-btn delete" data-action="delete" title="Eliminar">
         <i class="bi bi-trash"></i>
       </button>
     </div>
@@ -191,13 +264,18 @@ async function onTenantsActionClick(e, cell) {
     const ok = await showTenantsConfirm({
       title: "Eliminar Tenant",
       message: `¿Eliminar el tenant "${data.name}"?`,
+      okText: "Eliminar",
+      cancelText: "Cancelar",
     });
     if (!ok) return;
 
-    setTenantsTableLoading(true, "Eliminando...");
-    await apiFetch(`/tenants/${data.id}`, { method: "DELETE" });
-    await window._tenantsTable.replaceData();
-    setTenantsTableLoading(false);
+    try {
+      setTenantsTableLoading(true, "Eliminando...");
+      await apiFetch(`/tenants/${data.id}`, { method: "DELETE" });
+      await window._tenantsTable.replaceData();
+    } finally {
+      setTenantsTableLoading(false);
+    }
   }
 }
 
@@ -299,26 +377,36 @@ async function saveTenant() {
   const btn = document.getElementById("btnSaveTenant");
   const errBox = document.getElementById("tenantFormError");
 
+  errBox.classList.add("d-none");
+  errBox.textContent = "";
+
   setButtonLoading(btn, true);
 
   try {
     const id = document.getElementById("tenant-id").value.trim();
-
-    const metadataText = document.getElementById("tenant-metadata").value;
-    const metadata = safeJsonParse(metadataText);
-    if (metadata === "__invalid__") {
-      errBox.textContent = "Metadata debe ser JSON válido";
-      errBox.classList.remove("d-none");
-      return;
-    }
 
     const payload = {
       name: document.getElementById("tenant-name").value.trim(),
       rut: document.getElementById("tenant-rut").value.trim() || null,
       plan: document.getElementById("tenant-plan").value.trim() || null,
       status: document.getElementById("tenant-status").value.trim() || null,
-      metadata: metadata || null,
+      metadata: null,
     };
+
+    if (!payload.name) {
+      errBox.textContent = "Name es obligatorio.";
+      errBox.classList.remove("d-none");
+      return;
+    }
+
+    const mdText = document.getElementById("tenant-metadata").value;
+    const md = safeJsonParse(mdText);
+    if (md === "__invalid__") {
+      errBox.textContent = "Metadata debe ser JSON válido.";
+      errBox.classList.remove("d-none");
+      return;
+    }
+    payload.metadata = md || null;
 
     const isEdit = !!id;
     const url = isEdit ? `/tenants/${id}` : `/tenants/`;
@@ -332,12 +420,14 @@ async function saveTenant() {
     bootstrap.Modal.getInstance(document.getElementById("tenantModal")).hide();
     await window._tenantsTable.replaceData();
 
+  } catch (e) {
+    errBox.textContent = e?.message || "No se pudo guardar el tenant.";
+    errBox.classList.remove("d-none");
   } finally {
     setButtonLoading(btn, false);
   }
 }
 
-/* Alias */
-function renderTenants(container) {
-  return renderTenantsView(container);
-}
+/* Exponer en global (robusto) */
+window.renderTenantsView = renderTenantsView;
+window.renderTenants = renderTenants;
