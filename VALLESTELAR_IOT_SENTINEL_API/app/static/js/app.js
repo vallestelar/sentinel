@@ -1,0 +1,209 @@
+document.addEventListener("DOMContentLoaded", () => {
+  // Logout
+  const btnLogout = document.getElementById("btnLogout");
+  if (btnLogout) btnLogout.addEventListener("click", logout);
+
+  const viewTitle = document.getElementById("viewTitle");
+  const container = document.getElementById("viewContainer");
+
+  /* =========================
+     ROUTER CENTRAL
+     ========================= */
+
+  const routes = {
+    dashboard: {
+      title: "Dashboard",
+      render: (c) =>
+        typeof renderDashboardView === "function"
+          ? renderDashboardView(c)
+          : renderPlaceholder(c, "dashboard"),
+    },
+
+    "train-groups": {
+      title: "Train Groups",
+      render: (c) =>
+        typeof renderTrainGroupsView === "function"
+          ? renderTrainGroupsView(c)
+          : (typeof renderTrainGroups === "function"
+              ? renderTrainGroups(c)
+              : renderPlaceholder(c, "train-groups")),
+    },
+
+    "train-params": {
+      title: "Train Parameters",
+      render: (c) =>
+        typeof renderTrainParamsView === "function"
+          ? renderTrainParamsView(c)
+          : renderPlaceholder(c, "train-params"),
+    },
+    
+    "train-features": {
+      title: "Train Features",
+      render: (c) =>
+        typeof renderTrainFeaturesView === "function"
+          ? renderTrainFeaturesView(c)
+          : (typeof renderTrainFeatures === "function"
+              ? renderTrainFeatures(c)
+              : renderPlaceholder(c, "train-features")),
+    },
+
+    "model-bindings": {
+      title: "Model Bindings",
+      render: (c) =>
+        typeof renderModelBindingsView === "function"
+          ? renderModelBindingsView(c)
+          : (typeof renderModelBindings === "function"
+              ? renderModelBindings(c)
+              : renderPlaceholder(c, "model-bindings")),
+    },
+
+    "model-types": {
+      title: "Model Types",
+      render: (c) =>
+        typeof renderModelTypesView === "function"
+          ? renderModelTypesView(c)
+          : (typeof renderModelTypes === "function"
+              ? renderModelTypes(c)
+              : renderPlaceholder(c, "model-types")),
+    },
+
+    "model-artifacts": {
+      title: "Model Artifacts",
+      render: (c) =>
+        typeof renderModelArtifactsView === "function"
+          ? renderModelArtifactsView(c)
+          : (typeof renderModelArtifacts === "function"
+              ? renderModelArtifacts(c)
+              : renderPlaceholder(c, "model-artifacts")),
+    },
+
+    "model-validations": {
+      title: "Model Validations",
+      render: (c) =>
+        typeof renderModelValidationsView === "function"
+          ? renderModelValidationsView(c)
+          : (typeof renderModelValidations === "function"
+              ? renderModelValidations(c)
+              : renderPlaceholder(c, "model-validations")),
+    },
+
+    assets: {
+      title: "Assets",
+      render: (c) =>
+        typeof renderAssetsView === "function"
+          ? renderAssetsView(c)
+          : (typeof renderAssets === "function"
+              ? renderAssets(c)
+              : renderPlaceholder(c, "assets")),
+    },
+
+    "asset-types": {
+      title: "Asset Types",
+      render: (c) =>
+        typeof renderAssetTypesView === "function"
+          ? renderAssetTypesView(c)
+          : (typeof renderAssetTypes === "function"
+              ? renderAssetTypes(c)
+              : renderPlaceholder(c, "asset-types")),
+    },
+
+    /* ✅ NUEVO: TENANTS */
+    tenants: {
+      title: "Tenants",
+      render: (c) =>
+        typeof renderTenantsView === "function"
+          ? renderTenantsView(c)
+          : (typeof renderTenants === "function"
+              ? renderTenants(c)
+              : renderPlaceholder(c, "tenants")),
+    },
+  };
+
+  /* =========================
+     HELPERS DE NAVEGACIÓN
+     ========================= */
+
+  function setActive(btn) {
+    document
+      .querySelectorAll(".bo-menu-item")
+      .forEach((b) => b.classList.remove("active"));
+    if (btn) btn.classList.add("active");
+  }
+
+  function navigate(view, btn) {
+    const route = routes[view];
+
+    if (btn) setActive(btn);
+
+    if (!route) {
+      const title = btn ? btn.innerText.trim() : view;
+      if (viewTitle) viewTitle.textContent = title;
+      return renderPlaceholder(container, view);
+    }
+
+    if (viewTitle) viewTitle.textContent = route.title;
+    return route.render(container);
+  }
+
+  /* =========================
+     MENÚ LATERAL
+     ========================= */
+
+  document.querySelectorAll(".bo-menu-item").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const view = btn.dataset.view;
+      navigate(view, btn);
+    });
+  });
+
+  /* =========================
+     LOGO → DASHBOARD
+     ========================= */
+
+  const sidebarLogo = document.getElementById("sidebarLogo");
+  if (sidebarLogo) {
+    sidebarLogo.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+
+      const dashboardBtn = document.querySelector(
+        '.bo-menu-item[data-view="dashboard"]'
+      );
+
+      document
+        .querySelectorAll(".bo-menu-item")
+        .forEach((b) => b.classList.remove("active"));
+      if (dashboardBtn) dashboardBtn.classList.add("active");
+
+      if (viewTitle) viewTitle.textContent = "Dashboard";
+      return navigate("dashboard", dashboardBtn);
+    });
+  }
+
+  /* =========================
+     ARRANQUE INICIAL
+     ========================= */
+
+  const dashboardBtn = document.querySelector(
+    '.bo-menu-item[data-view="dashboard"]'
+  );
+
+  if (dashboardBtn) {
+    dashboardBtn.click();
+  } else {
+    navigate("dashboard", null);
+  }
+});
+
+/* =========================
+   FALLBACK (único)
+   ========================= */
+
+function renderPlaceholder(container, name) {
+  if (!container) return;
+  container.innerHTML = `
+    <div class="alert alert-info">
+      Vista <b>${name}</b> pendiente de implementar.
+    </div>
+  `;
+}

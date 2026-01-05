@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Backoffice · Vallestelar</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
+  <link href="/static/css/backoffice.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+</head>
+
+<body class="bo-app">
+  <script src="/static/js/auth.js"></script>
+  <script>
+    // Bloqueo inmediato si no hay token
+    requireAuthOrRedirect();
+  </script>
+
+  <div class="d-flex" style="min-height: 100vh;">
+    <!-- SIDEBAR -->
+    <aside class="bo-sidebar bo-surface border-end">
+      <div class="bo-brand p-3 border-bottom" id="sidebarLogo" style="cursor:pointer;">
+        <div class="d-flex align-items-center gap-2">
+          <img
+            src="/static/img/logo.png"
+            alt="Vallestelar"
+            class="bo-logo-img"
+          /><div>
+            <div class="fw">IOT Sentinel</div>
+
+             </div>
+        </div>
+      </div>
+
+      <nav class="p-2">
+        <div class="bo-menu-section-title">Dashboard</div>
+
+        <!-- Dashboard -->
+        <button class="bo-menu-item" data-view="dashboard">
+          <i class="bi bi-speedometer2"></i>
+          <span>Dashboard</span>
+        </button>
+
+        <div class="bo-menu-sep"></div>
+        <div class="bo-menu-section-title">Infraestructura</div>
+
+        <!-- Sites -->
+        <button class="bo-menu-item" data-view="sites">
+          <i class="bi bi-geo-alt"></i>
+          <span>Sites</span>
+        </button>
+
+        <!-- Devices -->
+        <button class="bo-menu-item" data-view="devices">
+          <i class="bi bi-cpu"></i>
+          <span>Devices</span>
+        </button>
+
+        <!-- Sensors -->
+        <button class="bo-menu-item" data-view="sensors">
+          <i class="bi bi-radar"></i>
+          <span>Sensors</span>
+        </button>
+
+        <!-- Actuators -->
+        <button class="bo-menu-item" data-view="actuators">
+          <i class="bi bi-toggles2"></i>
+          <span>Actuators</span>
+        </button>
+
+        <div class="bo-menu-sep"></div>
+        <div class="bo-menu-section-title">Operación</div>
+
+        <!-- Tanks -->
+        <button class="bo-menu-item" data-view="tanks">
+          <i class="bi bi-droplet-half"></i>
+          <span>Tanks</span>
+        </button>
+
+        <!-- Pumps -->
+        <button class="bo-menu-item" data-view="pumps">
+          <i class="bi bi-water"></i>
+          <span>Pumps</span>
+        </button>
+
+        <!-- Irrigation Zones -->
+        <button class="bo-menu-item" data-view="irrigation-zones">
+          <i class="bi bi-grid-3x3-gap"></i>
+          <span>Irrigation Zones</span>
+        </button>
+
+        <!-- Irrigation Schedules -->
+        <button class="bo-menu-item" data-view="irrigation-schedules">
+          <i class="bi bi-calendar2-week"></i>
+          <span>Irrigation Schedules</span>
+        </button>
+
+        <!-- Rules -->
+        <button class="bo-menu-item" data-view="rules">
+          <i class="bi bi-diagram-3"></i>
+          <span>Rules</span>
+        </button>
+
+        <div class="bo-menu-sep"></div>
+        <div class="bo-menu-section-title">Telemetría</div>
+
+        <!-- Sensor Readings -->
+        <button class="bo-menu-item" data-view="sensor-readings">
+          <i class="bi bi-activity"></i>
+          <span>Sensor Readings</span>
+        </button>
+
+        <!-- Events -->
+        <button class="bo-menu-item" data-view="events">
+          <i class="bi bi-bell"></i>
+          <span>Events</span>
+        </button>
+
+        <!-- Commands -->
+        <button class="bo-menu-item" data-view="commands">
+          <i class="bi bi-terminal"></i>
+          <span>Commands</span>
+        </button>
+
+        <div class="bo-menu-sep"></div>
+        <div class="bo-menu-section-title">Seguridad</div>
+        
+        <!-- Security Modes -->
+        <button class="bo-menu-item" data-view="security-modes">
+          <i class="bi bi-shield-lock"></i>
+          <span>Security Modes</span>
+        </button>
+
+        <!-- Tenants -->
+        <button class="bo-menu-item" data-view="tenants">
+          <i class="bi bi-building"></i>
+          <span>Tenants</span>
+        </button>
+
+        <!-- Users -->
+        <button class="bo-menu-item" data-view="users">
+          <i class="bi bi-people"></i>
+          <span>Users</span>
+        </button>
+
+        <!-- Memberships -->
+        <button class="bo-menu-item" data-view="user-memberships">
+          <i class="bi bi-person-badge"></i>
+          <span>User Memberships</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="flex-grow-1 d-flex flex-column">
+      <!-- TOPBAR -->
+      <header class="bo-topbar bo-surface border-bottom px-3">
+        <div class="d-flex align-items-center justify-content-between py-2">
+          <div class="fw-semibold" id="viewTitle">Dashboard</div>
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary btn-sm" id="btnLogout">Logout</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTENT -->
+      <section class="p-3 flex-grow-1">
+        <div id="viewContainer">
+          <div class="text-muted">
+            Seleccione una entidad en el menú para comenzar.
+          </div>
+        </div>
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="px-3 py-2">
+        <div class="text-center small text-muted" style="opacity:.75;">
+          © 2026 <strong>Vallestelar.cl</strong> · Todos los derechos reservados
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
+  <script src="/static/js/api.js"></script>
+
+  <!-- Views (ajuste estos nombres a sus ficheros reales) -->
+  <script src="/static/js/views/dashboard_view.js"></script>
+
+  <script src="/static/js/views/site_view.js"></script>
+  <script src="/static/js/views/device_view.js"></script>
+  <script src="/static/js/views/sensor_view.js"></script>
+  <script src="/static/js/views/actuator_view.js"></script>
+
+  <script src="/static/js/views/tank_view.js"></script>
+  <script src="/static/js/views/pump_view.js"></script>
+  <script src="/static/js/views/irrigation_zone_view.js"></script>
+  <script src="/static/js/views/irrigation_schedule_view.js"></script>
+  <script src="/static/js/views/rule_view.js"></script>
+
+  <script src="/static/js/views/sensor_reading_view.js"></script>
+  <script src="/static/js/views/event_view.js"></script>
+  <script src="/static/js/views/command_view.js"></script>
+
+  <script src="/static/js/views/security_mode_view.js"></script>
+  <script src="/static/js/views/tenant_view.js"></script>
+  <script src="/static/js/views/user_view.js"></script>
+  <script src="/static/js/views/user_membership_view.js"></script>
+
+  <!-- Bootstrap JS (incluye Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

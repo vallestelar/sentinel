@@ -28,7 +28,7 @@ pip install -r requirements.txt
 pip install <nuevo-paquete>
 ```
 ```
-pip freeze > requirements.txt
+
 ```
 ### Run local
 ```
@@ -68,4 +68,10 @@ aerich migrate --name first
 ```
 aerich upgrade
 ```
-
+```json
+{
+  "tenant_id": "019b8a45-1255-72af-b4ba-91f938bf448a",
+  "email": "antoniomanuelvergara@gmail.com",
+  "password": "Amvm1973!"
+}
+```

@@ -9,9 +9,7 @@ from app.repositories.user_repository import get_user_by_email, user_has_members
 
 
 
-router = APIRouter(prefix="/api/v1/auth", tags=["Auth"])
-
-
+router = APIRouter(prefix="/api/v1/login", tags=["Auth"])
 @router.post("/token", response_model=TokenResponse)
 async def login(data: LoginRequest) -> TokenResponse:
     invalid_exc = HTTPException(

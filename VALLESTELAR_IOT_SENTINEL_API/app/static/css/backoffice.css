@@ -1,0 +1,262 @@
+/* ==========================================================================
+   BASE (layout + componentes)
+   ========================================================================== */
+
+.bo-sidebar {
+  width: 260px;
+}
+
+.bo-topbar {
+  background: transparent;
+}
+
+.bo-logo {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.bo-logo-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* Menu item (base) */
+.bo-menu-item {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bo-menu-item i {
+  font-size: 1rem;
+  width: 18px;
+  text-align: center;
+  opacity: 0.9;
+}
+
+.bo-menu-item span {
+  flex: 1;
+}
+
+/* ==========================================================================
+   LOGIN DARK THEME (AZUL)
+   ========================================================================== */
+
+.bo-login {
+  min-height: 100vh;
+  background: linear-gradient(145deg, #0b1a2a, #102a4a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bo-login .card {
+  background-color: #142a45;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: #e7eff8;
+}
+
+.bo-login .form-label {
+  color: #b9cfe6;
+}
+
+.bo-login .form-control {
+  background-color: #102a4a;
+  border: 1px solid #2b5d8f;
+  color: #e7eff8;
+}
+
+.bo-login .form-control:focus {
+  background-color: #102a4a !important;
+  color: #e7eff8 !important;
+  border-color: #4fa3ff;
+  box-shadow: 0 0 0 0.15rem rgba(79, 163, 255, 0.25);
+}
+
+.bo-login .btn-primary {
+  background-color: #2b7bd6;
+  border-color: #2b7bd6;
+  font-weight: 600;
+}
+
+.bo-login .btn-primary:hover {
+  background-color: #2568b8;
+  border-color: #2568b8;
+}
+
+.bo-login .alert-danger {
+  background-color: #5a1e1e;
+  border: none;
+  color: #ffdede;
+}
+
+.bo-login .text-muted {
+  color: #9fb7cf !important;
+}
+
+/* Autofill */
+.bo-login input:-webkit-autofill,
+.bo-login input:-webkit-autofill:hover,
+.bo-login input:-webkit-autofill:focus,
+.bo-login input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #102a4a inset !important;
+  -webkit-text-fill-color: #e7eff8 !important;
+  caret-color: #e7eff8;
+  border: 1px solid #2b5d8f;
+}
+
+.bo-login input:-webkit-autofill {
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* ==========================================================================
+   APP DARK THEME (AZUL)
+   ========================================================================== */
+
+.bo-app {
+  background: linear-gradient(145deg, #0b1a2a, #102a4a);
+  color: #e7eff8;
+}
+
+/* Surfaces */
+.bo-surface {
+  background-color: #142a45 !important;
+  color: #e7eff8;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Sidebar */
+.bo-brand {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.bo-app .bo-menu-item {
+  color: #d2e3f5;
+  border: 1px solid transparent;
+}
+
+.bo-app .bo-menu-item:hover {
+  background: rgba(79, 163, 255, 0.10);
+  border-color: rgba(79, 163, 255, 0.25);
+}
+
+.bo-app .bo-menu-item.active {
+  background: rgba(79, 163, 255, 0.18);
+  border-color: rgba(79, 163, 255, 0.35);
+  color: #e7eff8;
+}
+
+
+.bo-menu-section-title {
+  position: relative;
+  margin: 14px 10px 6px;
+  padding-left: 8px;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  color: #bdc1ee;
+}
+
+.bo-menu-section-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Buttons */
+.bo-app .btn-primary {
+  background-color: #2b7bd6;
+  border-color: #2b7bd6;
+  font-weight: 600;
+}
+
+.bo-app .btn-primary:hover {
+  background-color: #2568b8;
+  border-color: #2568b8;
+}
+
+/* Alerts */
+.bo-app .alert-info {
+  background: rgba(79, 163, 255, 0.12);
+  border: 1px solid rgba(79, 163, 255, 0.20);
+  color: #d2e3f5;
+}
+
+/* Inputs */
+.bo-app .form-control {
+  background-color: #102a4a;
+  border: 1px solid #2b5d8f;
+  color: #e7eff8;
+}
+
+.bo-app .form-control:focus {
+  border-color: #4fa3ff;
+  box-shadow: 0 0 0 0.15rem rgba(79, 163, 255, 0.25);
+  color: #e7eff8;
+}
+
+.bo-app input::placeholder {
+  color: #9fb7cf;
+}
+
+/* ==========================================================================
+   TABULATOR – AZUL
+   ========================================================================== */
+
+.bo-app .tabulator .tabulator-row:hover::before {
+  background-color: #4fa3ff;
+}
+
+.bo-app .tabulator .tabulator-row.tabulator-selected {
+  background-color: rgba(79, 163, 255, 0.18) !important;
+}
+
+.bo-app .tabulator .tabulator-footer .tabulator-pages button:hover {
+  background: rgba(79, 163, 255, 0.12);
+  border-color: rgba(79, 163, 255, 0.35);
+}
+
+.bo-app .tabulator .tabulator-footer .tabulator-pages button.active {
+  background: rgba(79, 163, 255, 0.18);
+  border-color: rgba(79, 163, 255, 0.45);
+}
+
+/* ==========================================================================
+   CHECKBOX – azul corporativo
+   ========================================================================== */
+
+.bo-app .form-check-input:checked {
+  background-color: #2b7bd6 !important;
+  border-color: #2b7bd6 !important;
+}
+
+.bo-app .form-check-input:focus {
+  border-color: #4fa3ff !important;
+  box-shadow: 0 0 0 0.15rem rgba(79, 163, 255, 0.25) !important;
+}
+
+/* ==========================================================================
+   DASHBOARD – tabla últimos cambios
+   ========================================================================== */
+
+.bo-app .dash-table tbody tr:hover {
+  background-color: rgba(79, 163, 255, 0.06);
+}
