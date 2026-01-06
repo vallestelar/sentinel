@@ -4,6 +4,8 @@
    - Tabulator + search (igual patrón assetsView)
    - Modal create/edit
    - Confirm delete modal custom (igual patrón assetsView)
+   - ✅ Status combo: active | suspended
+   - ✅ Tabla: icono según status
    ====================================================== */
 
 let _tenantsTableOverlayEl = null;
@@ -46,6 +48,44 @@ function safeJsonParse(str) {
   }
 }
 
+function normalizeStatus(val) {
+  const s = (val ?? "").toString().trim().toLowerCase();
+  if (s === "active") return "active";
+  if (s === "suspended") return "suspended";
+  return ""; // desconocido / vacío
+}
+
+/* =========================
+   Status icon formatter
+   ========================= */
+
+function tenantStatusIconFormatter(cell) {
+  const status = (cell.getValue() || "").toLowerCase();
+
+  if (status === "active") {
+    return `
+      <div class="d-flex justify-content-center bo-status-icon">
+        <i class="bi bi-check-circle-fill bo-status-active"></i>
+      </div>
+    `;
+  }
+
+  if (status === "suspended") {
+    return `
+      <div class="d-flex justify-content-center bo-status-icon">
+       <i class="bi bi-pause-circle-fill bo-status-suspended"></i>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="d-flex justify-content-center bo-status-icon">
+      <i class="bi bi-question-circle bo-status-unknown"></i>
+    </div>
+  `;
+}
+
+
 /* =========================
    Confirm modal (igual assetsView)
    ========================= */
@@ -80,8 +120,10 @@ function showTenantsConfirm({ title, message, okText, cancelText } = {}) {
   const modalEl = document.getElementById("tenantsConfirmModal");
   if (!modalEl) throw new Error("tenantsConfirmModal no está en el DOM");
 
-  document.getElementById("tenantsConfirmTitle").textContent = title || "Confirmar acción";
-  document.getElementById("tenantsConfirmMessage").textContent = message || "¿Seguro?";
+  document.getElementById("tenantsConfirmTitle").textContent =
+    title || "Confirmar acción";
+  document.getElementById("tenantsConfirmMessage").textContent =
+    message || "¿Seguro?";
 
   const btnOk = document.getElementById("tenantsConfirmOk");
   const btnCancel = document.getElementById("tenantsConfirmCancel");
@@ -186,7 +228,16 @@ async function renderTenantsView(container) {
       { title: "Name", field: "name", widthGrow: 1 },
       { title: "RUT", field: "rut", width: 140 },
       { title: "Plan", field: "plan", width: 140 },
-      { title: "Status", field: "status", width: 120 },
+
+      // ✅ Icono según status
+      {
+        title: "Status",
+        field: "status",
+        width: 90,
+        hozAlign: "center",
+        formatter: tenantStatusIconFormatter,
+      },
+
       {
         title: "Acciones",
         headerSort: false,
@@ -197,7 +248,9 @@ async function renderTenantsView(container) {
     ],
   });
 
-  table.on("dataLoading", () => setTenantsTableLoading(true, "Cargando tabla..."));
+  table.on("dataLoading", () =>
+    setTenantsTableLoading(true, "Cargando tabla...")
+  );
   table.on("dataLoaded", () => setTenantsTableLoading(false));
   table.on("dataLoadError", () => setTenantsTableLoading(false, "Error al cargar"));
 
@@ -226,7 +279,9 @@ async function renderTenantsView(container) {
     });
   });
 
-  document.getElementById("btnCreateTenant").addEventListener("click", () => openTenantModal());
+  document
+    .getElementById("btnCreateTenant")
+    .addEventListener("click", () => openTenantModal());
 }
 
 /* Alias por si su app llama renderTenants */
@@ -319,7 +374,12 @@ function tenantModalHtml() {
 
               <div class="col-md-6">
                 <label class="form-label">Status</label>
-                <input class="form-control" id="tenant-status" />
+
+                <!-- ✅ Combo status -->
+                <select class="form-select" id="tenant-status" required>
+                  <option value="active">active</option>
+                  <option value="suspended">suspended</option>
+                </select>
               </div>
             </div>
 
@@ -347,6 +407,7 @@ function tenantModalHtml() {
 function openTenantModal(data = null) {
   const errBox = document.getElementById("tenantFormError");
   errBox.classList.add("d-none");
+  errBox.textContent = "";
 
   document.getElementById("tenantForm").reset();
   document.getElementById("tenant-id").value = data?.id || "";
@@ -354,11 +415,19 @@ function openTenantModal(data = null) {
   document.getElementById("tenantModalTitle").textContent =
     data ? "Editar Tenant" : "Crear Tenant";
 
+  // ✅ defaults
+  const statusSelect = document.getElementById("tenant-status");
+  statusSelect.value = "active";
+
   if (data) {
     document.getElementById("tenant-name").value = data.name || "";
     document.getElementById("tenant-rut").value = data.rut || "";
     document.getElementById("tenant-plan").value = data.plan || "";
-    document.getElementById("tenant-status").value = data.status || "";
+
+    // ✅ set status (solo si coincide)
+    const st = normalizeStatus(data.status);
+    statusSelect.value = st || "active";
+
     document.getElementById("tenant-metadata").value = data.metadata
       ? JSON.stringify(data.metadata, null, 2)
       : "";
@@ -389,7 +458,7 @@ async function saveTenant() {
       name: document.getElementById("tenant-name").value.trim(),
       rut: document.getElementById("tenant-rut").value.trim() || null,
       plan: document.getElementById("tenant-plan").value.trim() || null,
-      status: document.getElementById("tenant-status").value.trim() || null,
+      status: normalizeStatus(document.getElementById("tenant-status").value) || null,
       metadata: null,
     };
 
@@ -419,7 +488,6 @@ async function saveTenant() {
 
     bootstrap.Modal.getInstance(document.getElementById("tenantModal")).hide();
     await window._tenantsTable.replaceData();
-
   } catch (e) {
     errBox.textContent = e?.message || "No se pudo guardar el tenant.";
     errBox.classList.remove("d-none");
