@@ -605,34 +605,25 @@
    ====================================================== */
 
 /* Contenedor común */
-.bo-status-icon {
-  font-size: 1.05rem;
-  line-height: 1;
+.bo-app .tabulator .tabulator-cell .bo-status-icon {
+  font-size: 0.95rem;
 }
 
 /* ACTIVE → verde pastel */
-.bo-status-active {
-  color: #6fcf97; /* verde pastel */
-  text-shadow: 0 0 6px rgba(111, 207, 151, 0.35);
+.bo-app .tabulator .tabulator-cell .bo-status-active {
+  color: #6fcf97 !important;
+
 }
 
 /* SUSPENDED → rojo pastel */
-.bo-status-suspended {
-  color: #eb8c8c; /* rojo pastel */
-  text-shadow: 0 0 6px rgba(235, 140, 140, 0.35);
+.bo-app .tabulator .tabulator-cell .bo-status-suspended {
+  color: #eb8c8c !important;; /* rojo pastel */
+ 
 }
 
 /* Estado desconocido */
-.bo-status-unknown {
-  color: #9bb6d6;
+.bo-app .tabulator .tabulator-cell .bo-status-unknown {
+  color: #9bb6d6 !important;;
   opacity: 0.75;
 }
 
-/* Hover sutil (cuando pasa el ratón por la fila) */
-.tabulator-row:hover .bo-status-active {
-  color: #7fe3ad;
-}
-
-.tabulator-row:hover .bo-status-suspended {
-  color: #f2a2a2;
-}
