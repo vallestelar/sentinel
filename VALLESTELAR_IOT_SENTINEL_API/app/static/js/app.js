@@ -19,95 +19,17 @@ document.addEventListener("DOMContentLoaded", () => {
           : renderPlaceholder(c, "dashboard"),
     },
 
-    "train-groups": {
-      title: "Train Groups",
-      render: (c) =>
-        typeof renderTrainGroupsView === "function"
-          ? renderTrainGroupsView(c)
-          : (typeof renderTrainGroups === "function"
-              ? renderTrainGroups(c)
-              : renderPlaceholder(c, "train-groups")),
+
+  sites: {
+  title: "Sites",
+  render: (c) =>
+    typeof renderSitesView === "function"
+      ? renderSitesView(c)
+      : (typeof renderSites === "function"
+          ? renderSites(c)
+          : renderPlaceholder(c, "sites")),
     },
 
-    "train-params": {
-      title: "Train Parameters",
-      render: (c) =>
-        typeof renderTrainParamsView === "function"
-          ? renderTrainParamsView(c)
-          : renderPlaceholder(c, "train-params"),
-    },
-    
-    "train-features": {
-      title: "Train Features",
-      render: (c) =>
-        typeof renderTrainFeaturesView === "function"
-          ? renderTrainFeaturesView(c)
-          : (typeof renderTrainFeatures === "function"
-              ? renderTrainFeatures(c)
-              : renderPlaceholder(c, "train-features")),
-    },
-
-    "model-bindings": {
-      title: "Model Bindings",
-      render: (c) =>
-        typeof renderModelBindingsView === "function"
-          ? renderModelBindingsView(c)
-          : (typeof renderModelBindings === "function"
-              ? renderModelBindings(c)
-              : renderPlaceholder(c, "model-bindings")),
-    },
-
-    "model-types": {
-      title: "Model Types",
-      render: (c) =>
-        typeof renderModelTypesView === "function"
-          ? renderModelTypesView(c)
-          : (typeof renderModelTypes === "function"
-              ? renderModelTypes(c)
-              : renderPlaceholder(c, "model-types")),
-    },
-
-    "model-artifacts": {
-      title: "Model Artifacts",
-      render: (c) =>
-        typeof renderModelArtifactsView === "function"
-          ? renderModelArtifactsView(c)
-          : (typeof renderModelArtifacts === "function"
-              ? renderModelArtifacts(c)
-              : renderPlaceholder(c, "model-artifacts")),
-    },
-
-    "model-validations": {
-      title: "Model Validations",
-      render: (c) =>
-        typeof renderModelValidationsView === "function"
-          ? renderModelValidationsView(c)
-          : (typeof renderModelValidations === "function"
-              ? renderModelValidations(c)
-              : renderPlaceholder(c, "model-validations")),
-    },
-
-    assets: {
-      title: "Assets",
-      render: (c) =>
-        typeof renderAssetsView === "function"
-          ? renderAssetsView(c)
-          : (typeof renderAssets === "function"
-              ? renderAssets(c)
-              : renderPlaceholder(c, "assets")),
-    },
-
-    "asset-types": {
-      title: "Asset Types",
-      render: (c) =>
-        typeof renderAssetTypesView === "function"
-          ? renderAssetTypesView(c)
-          : (typeof renderAssetTypes === "function"
-              ? renderAssetTypes(c)
-              : renderPlaceholder(c, "asset-types")),
-    },
-
-    /* ✅ NUEVO: TENANTS */
     tenants: {
       title: "Tenants",
       render: (c) =>

@@ -526,7 +526,76 @@
   min-width: 180px;
   color: #e7eff8; /* texto claro */
 }
+/* ======================================================
+   SELECT / COMBO – Vallestelar Blue Tech Style
+   ====================================================== */
 
-.bo-app .text-muted {
-  color: #a9bdd6 !important; /* azul grisáceo suave */
+.bo-app select.form-select,
+.bo-app select.form-control {
+  background-color: #0f2742;
+  color: #e6f0ff;
+  border: 1px solid #2b5ea8;
+  border-radius: 8px;
+  padding: 0.45rem 2.2rem 0.45rem 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease,
+    background-color 0.15s ease;
+
+  /* Flecha custom */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background-image:
+    linear-gradient(45deg, transparent 50%, #9fc4ff 50%),
+    linear-gradient(135deg, #9fc4ff 50%, transparent 50%),
+    linear-gradient(to right, transparent, transparent);
+  background-position:
+    calc(100% - 18px) 55%,
+    calc(100% - 12px) 55%,
+    100% 0;
+  background-size:
+    6px 6px,
+    6px 6px,
+    2.5rem 100%;
+  background-repeat: no-repeat;
+}
+
+/* Hover */
+.bo-app select.form-select:hover,
+.bo-app select.form-control:hover {
+  border-color: #4f87d9;
+}
+
+/* Focus */
+.bo-app select.form-select:focus,
+.bo-app select.form-control:focus {
+  background-color: #112f52;
+  color: #ffffff;
+  border-color: #6fa4ff;
+  outline: none;
+  box-shadow: 0 0 0 0.15rem rgba(111, 164, 255, 0.25);
+}
+
+/* Disabled */
+.bo-app select.form-select:disabled,
+.bo-app select.form-control:disabled {
+  background-color: #0b1e33;
+  color: #7f9bbf;
+  border-color: #24466f;
+  cursor: not-allowed;
+}
+
+/* Option list (depende del navegador, pero mejora bastante) */
+.bo-app select.form-select option,
+.bo-app select.form-control option {
+  background-color: #0f2742;
+  color: #e6f0ff;
+}
+
+/* Placeholder-like option (ej: "(Seleccione tenant)") */
+.bo-app select option[value=""] {
+  color: #9bb6d6;
 }

@@ -35,7 +35,8 @@ function getUsername() {
 }
 
 function getCompany() {
-  return localStorage.getItem("company");
+  // ✅ Compat: en su app nueva lo guarda como tenant
+  return localStorage.getItem("tenant") || localStorage.getItem("company");
 }
 
 function setAuthFromLoginResponse(data) {
@@ -43,9 +44,12 @@ function setAuthFromLoginResponse(data) {
   if (data?.access_token) {
     localStorage.setItem("access_token", data.access_token);
 
-    // Extraer username/company desde el access_token (JWT)
+    // Extraer username/company/tenant desde el access_token (JWT)
     const payload = parseJwtPayload(data.access_token);
     if (payload?.username) localStorage.setItem("username", payload.username);
+
+    // ✅ compat
+    if (payload?.tenant) localStorage.setItem("tenant", payload.tenant);
     if (payload?.company) localStorage.setItem("company", payload.company);
   }
 
@@ -65,6 +69,7 @@ function clearAuthAndRedirect() {
   localStorage.removeItem("id_token");
   localStorage.removeItem("username");
   localStorage.removeItem("company");
+  localStorage.removeItem("tenant"); // ✅ nuevo
 
   window.location.href = "/backoffice/login";
 }
@@ -79,17 +84,18 @@ async function refreshAccessToken() {
 
   const username = getUsername();
   const refresh_token = getRefreshToken();
-  const company = getCompany();
+  const tenantOrCompany = getCompany();
 
-  if (!username || !refresh_token || !company) {
-    throw new Error("Faltan datos para refresh (username/refresh_token/company).");
+  if (!username || !refresh_token || !tenantOrCompany) {
+    throw new Error("Faltan datos para refresh (username/refresh_token/company|tenant).");
   }
 
   refreshPromise = (async () => {
+    // ✅ backend probablemente espera company, enviamos company=tenant
     const res = await fetch(`${API_BASE}/auth/refresh`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, refresh_token, company }),
+      body: JSON.stringify({ username, refresh_token, company: tenantOrCompany }),
     });
 
     if (!res.ok) {
@@ -99,14 +105,13 @@ async function refreshAccessToken() {
 
     const data = await res.json();
 
-    // Ajuste estándar: guardar nuevo access_token y refresh_token si viene
     if (data?.access_token) localStorage.setItem("access_token", data.access_token);
     if (data?.refresh_token) localStorage.setItem("refresh_token", data.refresh_token);
 
-    // Recalcular username/company por si cambian (normalmente no)
     if (data?.access_token) {
       const payload = parseJwtPayload(data.access_token);
       if (payload?.username) localStorage.setItem("username", payload.username);
+      if (payload?.tenant) localStorage.setItem("tenant", payload.tenant);
       if (payload?.company) localStorage.setItem("company", payload.company);
     }
 
@@ -130,14 +135,14 @@ async function apiFetch(path, options = {}) {
   const token = getToken();
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  const doRequest = async (hdrs) => {
+  const doRequest = async (hdrs, opts) => {
     return await fetch(`${API_BASE}${path}`, {
-      ...options,
+      ...opts,
       headers: hdrs,
     });
   };
 
-  let res = await doRequest(headers);
+  let res = await doRequest(headers, options);
 
   // Token expirado → refresh y reintentar 1 vez
   if (res.status === 401 && !options.__retried) {
@@ -151,11 +156,8 @@ async function apiFetch(path, options = {}) {
       );
       if (newToken) retryHeaders.set("Authorization", `Bearer ${newToken}`);
 
-      res = await fetch(`${API_BASE}${path}`, {
-        ...options,
-        headers: retryHeaders,
-        __retried: true,
-      });
+      const retryOptions = { ...options, __retried: true };
+      res = await doRequest(retryHeaders, retryOptions);
     } catch (e) {
       clearAuthAndRedirect();
       return;
