@@ -5,9 +5,10 @@
    - Modal create/edit
    - Confirm delete modal custom
    - ✅ Tenant combo (muestra name, envía id)
-   - ✅ Site combo filtrado por tenant seleccionado
+   - ✅ Site combo filtrado por tenant seleccionado (solo sites del tenant elegido)
    - ✅ Status en modal: combo online | offline
    - ✅ Status en tabla: iconos (online/offline)
+   - ✅ En tabla: tenant_id y site_id -> se muestran como Name (resolviendo por cache)
    - ✅ Evitar scrollbar vertical del navegador: altura dinámica (100vh)
    - ✅ page_size=200 en todos los fetch
    ====================================================== */
@@ -19,6 +20,10 @@ let _devicesTableInstance = null;
 // ✅ Cache combos
 let _tenantsCacheForDevices = null;
 let _sitesByTenantCacheForDevices = new Map();
+
+// ✅ Mapas de resolución para tabla (id -> name)
+let _tenantNameById = new Map();
+let _siteNameById = new Map();
 
 /* =========================
    Helpers
@@ -80,22 +85,16 @@ function getDeviceId(row) {
  * Calcula altura disponible y la aplica a Tabulator.
  */
 function computeDevicesTableHeight(container) {
-  // Margen para no pegarse abajo
   const bottomMargin = 16;
-
-  // Top del contenedor de tabla
   const tableWrap = container.querySelector("#devicesTableWrap");
   const rect = tableWrap?.getBoundingClientRect();
   const top = rect ? rect.top : 0;
-
-  const h = Math.max(320, window.innerHeight - top - bottomMargin);
-  return h;
+  return Math.max(320, window.innerHeight - top - bottomMargin);
 }
 
 function applyDevicesTableHeight(container) {
   if (!_devicesTableInstance) return;
-  const h = computeDevicesTableHeight(container);
-  _devicesTableInstance.setHeight(h);
+  _devicesTableInstance.setHeight(computeDevicesTableHeight(container));
 }
 
 /* =========================
@@ -126,6 +125,51 @@ function deviceStatusIconFormatter(cell) {
       <i class="bi bi-question-circle bo-status-unknown" title="unknown"></i>
     </div>
   `;
+}
+
+/* =========================
+   Resolución ID -> Name para tabla
+   ========================= */
+
+function tenantNameFormatter(cell) {
+  const id = cell.getValue();
+  if (!id) return "—";
+  return _tenantNameById.get(id) || id;
+}
+
+function siteNameFormatter(cell) {
+  const id = cell.getValue();
+  if (!id) return "—";
+  return _siteNameById.get(id) || id;
+}
+
+/**
+ * Precalienta mapa de tenants (id -> name)
+ */
+async function warmupTenantNameMap() {
+  const tenants = await fetchTenantsForDevicesSelect();
+  for (const t of tenants) _tenantNameById.set(t.id, t.name);
+}
+
+/**
+ * A partir de los rows visibles/recibidos:
+ * - obtiene tenant_ids únicos
+ * - precarga sites por tenant
+ * - rellena mapa site_id -> site_name
+ * - redibuja tabla para que los formatters muestren nombres
+ */
+async function warmupSiteNameMapFromRows(rows) {
+  if (!rows || !rows.length) return;
+
+  const tenantIds = Array.from(
+    new Set(rows.map((r) => r?.tenant_id).filter(Boolean))
+  );
+
+  // Cargar sites por tenant y mapear site_id -> name
+  for (const tid of tenantIds) {
+    const sites = await fetchSitesForTenantSelect(tid);
+    for (const s of sites) _siteNameById.set(s.id, s.name);
+  }
 }
 
 /* =========================
@@ -316,7 +360,7 @@ async function renderDevicesView(container) {
         type="text"
         id="devicesSearch"
         class="form-control form-control-sm"
-        placeholder="Buscar por ID, tenant_id, site_id, name, device_type, serial, fw_version, status…"
+        placeholder="Buscar por ID, tenant, site, name, device_type, serial, fw_version, status…"
       />
     </div>
 
@@ -340,6 +384,13 @@ async function renderDevicesView(container) {
   const token = localStorage.getItem("access_token");
   setDevicesTableLoading(true, "Cargando tabla...");
 
+  // Precalentar tenants para poder mostrar nombres en tabla
+  try {
+    await warmupTenantNameMap();
+  } catch {
+    // Si falla, la tabla seguirá mostrando IDs como fallback
+  }
+
   const tableHeight = computeDevicesTableHeight(container);
 
   _devicesTableInstance = new Tabulator("#devicesTable", {
@@ -361,14 +412,16 @@ async function renderDevicesView(container) {
 
     columns: [
       { title: "ID", field: "id", width: 260 },
-      { title: "Tenant", field: "tenant_id", width: 260 },
-      { title: "Site", field: "site_id", width: 260 },
+
+      // ✅ Mostrar Name en vez de id
+      { title: "Tenant", field: "tenant_id", width: 240, formatter: tenantNameFormatter },
+      { title: "Site", field: "site_id", width: 240, formatter: siteNameFormatter },
+
       { title: "Name", field: "name", widthGrow: 1 },
       { title: "Type", field: "device_type", width: 160 },
       { title: "Serial", field: "serial", width: 170 },
       { title: "FW", field: "fw_version", width: 120 },
 
-      // ✅ Status como icono
       {
         title: "Status",
         field: "status",
@@ -397,7 +450,20 @@ async function renderDevicesView(container) {
   _devicesTableInstance.on("dataLoading", () =>
     setDevicesTableLoading(true, "Cargando tabla...")
   );
-  _devicesTableInstance.on("dataLoaded", () => setDevicesTableLoading(false));
+
+  _devicesTableInstance.on("dataLoaded", async (data) => {
+    setDevicesTableLoading(false);
+
+    // Precargar sites (id->name) basados en tenants presentes en los datos cargados
+    try {
+      await warmupSiteNameMapFromRows(data || []);
+      // Redibujar para que se vean los names
+      _devicesTableInstance.redraw(true);
+    } catch {
+      // Si falla, se verán IDs como fallback
+    }
+  });
+
   _devicesTableInstance.on("dataLoadError", () =>
     setDevicesTableLoading(false, "Error al cargar")
   );
@@ -416,20 +482,27 @@ async function renderDevicesView(container) {
     const q = (searchInput.value || "").trim().toLowerCase();
     if (!q) return _devicesTableInstance.clearFilter();
 
-    _devicesTableInstance.setFilter((data) => {
-      const id = (getDeviceId(data) || "").toLowerCase();
-      const tenantId = (data.tenant_id || "").toLowerCase();
-      const siteId = (data.site_id || "").toLowerCase();
-      const name = (data.name || "").toLowerCase();
-      const deviceType = (data.device_type || "").toLowerCase();
-      const serial = (data.serial || "").toLowerCase();
-      const fw = (data.fw_version || "").toLowerCase();
-      const status = (data.status || "").toLowerCase();
+    _devicesTableInstance.setFilter((row) => {
+      const id = (getDeviceId(row) || "").toLowerCase();
+
+      const tenantName = (_tenantNameById.get(row?.tenant_id) || row?.tenant_id || "")
+        .toString()
+        .toLowerCase();
+
+      const siteName = (_siteNameById.get(row?.site_id) || row?.site_id || "")
+        .toString()
+        .toLowerCase();
+
+      const name = (row.name || "").toLowerCase();
+      const deviceType = (row.device_type || "").toLowerCase();
+      const serial = (row.serial || "").toLowerCase();
+      const fw = (row.fw_version || "").toLowerCase();
+      const status = (row.status || "").toLowerCase();
 
       return (
         id.includes(q) ||
-        tenantId.includes(q) ||
-        siteId.includes(q) ||
+        tenantName.includes(q) ||
+        siteName.includes(q) ||
         name.includes(q) ||
         deviceType.includes(q) ||
         serial.includes(q) ||
@@ -618,7 +691,7 @@ function openDeviceModal(data = null) {
 
   modal.show();
 
-  // ✅ combos: tenants + sites filtrados por tenant
+  // ✅ combos: tenants + sites filtrados por tenant (SOLO los correspondientes)
   const tenantSelect = document.getElementById("device-tenant-id");
   const siteSelect = document.getElementById("device-site-id");
 
@@ -640,9 +713,11 @@ function openDeviceModal(data = null) {
         siteSelect.innerHTML = `<option value="">Seleccione tenant primero</option>`;
       }
 
+      // Al cambiar tenant -> recargar SOLO sites de ese tenant
       tenantSelect.onchange = async () => {
         const newTenantId = tenantSelect.value || "";
         siteSelect.disabled = true;
+
         siteSelect.innerHTML = newTenantId
           ? `<option value="">Cargando sites...</option>`
           : `<option value="">Seleccione tenant primero</option>`;
@@ -751,6 +826,12 @@ async function saveDevice() {
       method,
       body: JSON.stringify(payload),
     });
+
+    // Actualizar mapas tras guardar (por si cambió tenant/site)
+    try {
+      await warmupTenantNameMap();
+      await warmupSiteNameMapFromRows([{ tenant_id: tenantId, site_id: siteId }]);
+    } catch {}
 
     bootstrap.Modal.getInstance(document.getElementById("deviceModal")).hide();
     await window._devicesTable.replaceData();

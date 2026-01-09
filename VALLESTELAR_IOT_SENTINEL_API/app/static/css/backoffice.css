@@ -627,3 +627,29 @@
   opacity: 0.75;
 }
 
+/* ======================================================
+   DEVICE STATUS ICONS – Pastel style (online/offline)
+   ====================================================== */
+
+/* Contenedor común */
+.bo-app .tabulator .tabulator-cell .bo-status-icon {
+  font-size: 0.95rem;
+}
+
+/* ONLINE → verde pastel */
+.bo-app .tabulator .tabulator-cell .bo-status-online {
+  color: #6fcf97 !important;
+}
+
+/* OFFLINE → rojo pastel */
+.bo-app .tabulator .tabulator-cell .bo-status-offline {
+  color: #eb8c8c !important; /* rojo pastel */
+}
+
+/* Estado desconocido */
+.bo-app .tabulator .tabulator-cell .bo-status-unknown {
+  color: #9bb6d6 !important;
+  opacity: 0.75;
+}
+
+
