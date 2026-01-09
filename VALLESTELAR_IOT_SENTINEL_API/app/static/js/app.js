@@ -39,7 +39,22 @@ document.addEventListener("DOMContentLoaded", () => {
               ? renderTenants(c)
               : renderPlaceholder(c, "tenants")),
     },
+
+    devices: {
+    title: "Devices",
+    render: (c) =>
+      typeof renderDevicesView === "function"
+        ? renderDevicesView(c)
+        : (typeof renderDevices === "function"
+            ? renderDevices(c)
+            : (typeof renderDeviceView === "function"
+                ? renderDeviceView(c)
+                : renderPlaceholder(c, "devices"))),
+  },
+
   };
+
+  
 
   /* =========================
      HELPERS DE NAVEGACIÓN
