@@ -6,6 +6,7 @@
    - Confirm delete modal
    - ✅ Tenant combo (muestra name, envía id)
    - ✅ Timezones Chile combo
+   - ✅ En tabla: Tenant muestra Name en lugar de tenant_id
    ====================================================== */
 
 let _sitesTableOverlayEl = null;
@@ -13,6 +14,9 @@ let _sitesConfirmModalInstance = null;
 
 // ✅ Cache para tenants (para el combo)
 let _tenantsCacheForSites = null;
+
+// ✅ Map tenant_id -> tenant_name (para tabla)
+let _tenantNameByIdForSites = new Map();
 
 /* =========================
    Helpers
@@ -74,6 +78,11 @@ async function fetchTenantsForSitesSelect() {
     .filter((t) => t && t.id)
     .map((t) => ({ id: t.id, name: t.name || t.id }));
 
+  // ✅ Poblar mapa para tabla (id -> name)
+  _tenantNameByIdForSites = new Map(
+    _tenantsCacheForSites.map((t) => [t.id, t.name])
+  );
+
   return _tenantsCacheForSites;
 }
 
@@ -92,6 +101,13 @@ async function fillTenantsSelect(selectEl, selectedId = "") {
   if (selectedId) {
     selectEl.value = selectedId;
   }
+}
+
+// ✅ Formatter: mostrar tenant name en la tabla
+function tenantNameFormatterForSites(cell) {
+  const tenantId = cell.getValue();
+  if (!tenantId) return "—";
+  return _tenantNameByIdForSites.get(tenantId) || tenantId;
 }
 
 /* =========================
@@ -188,7 +204,7 @@ async function renderSitesView(container) {
         type="text"
         id="sitesSearch"
         class="form-control form-control-sm"
-        placeholder="Buscar por ID, tenant_id, name, address, timezone…"
+        placeholder="Buscar por ID, tenant, name, address, timezone…"
       />
     </div>
 
@@ -212,6 +228,13 @@ async function renderSitesView(container) {
   const token = localStorage.getItem("access_token");
   setSitesTableLoading(true, "Cargando tabla...");
 
+  // ✅ Precalentar tenants para que la tabla muestre name (no id)
+  try {
+    await fetchTenantsForSitesSelect();
+  } catch {
+    // si falla, la tabla mostrará el id (fallback)
+  }
+
   const table = new Tabulator("#sitesTable", {
     height: "520px",
     layout: "fitColumns",
@@ -231,7 +254,10 @@ async function renderSitesView(container) {
 
     columns: [
       { title: "ID", field: "id", width: 260 },
-      { title: "Tenant", field: "tenant_id", width: 260 },
+
+      // ✅ Tenant muestra nombre
+      { title: "Tenant", field: "tenant_id", width: 260, formatter: tenantNameFormatterForSites },
+
       { title: "Name", field: "name", widthGrow: 1 },
       { title: "Address", field: "address_text", widthGrow: 2 },
       { title: "Timezone", field: "timezone", width: 170 },
@@ -261,14 +287,19 @@ async function renderSitesView(container) {
 
     table.setFilter((data) => {
       const id = (data.id || "").toLowerCase();
-      const tenantId = (data.tenant_id || "").toLowerCase();
+
+      // ✅ buscar por tenant name o por id (fallback)
+      const tenantName = (_tenantNameByIdForSites.get(data.tenant_id) || data.tenant_id || "")
+        .toString()
+        .toLowerCase();
+
       const name = (data.name || "").toLowerCase();
       const addr = (data.address_text || "").toLowerCase();
       const tz = (data.timezone || "").toLowerCase();
 
       return (
         id.includes(q) ||
-        tenantId.includes(q) ||
+        tenantName.includes(q) ||
         name.includes(q) ||
         addr.includes(q) ||
         tz.includes(q)
@@ -531,6 +562,9 @@ async function saveSite() {
       method,
       body: JSON.stringify(payload),
     });
+
+    // ✅ refrescar mapa por si cambió el nombre de un tenant (poco probable, pero consistente)
+    try { await fetchTenantsForSitesSelect(); } catch {}
 
     bootstrap.Modal.getInstance(document.getElementById("siteModal")).hide();
     await window._sitesTable.replaceData();
