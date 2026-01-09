@@ -6,7 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from tortoise.exceptions import IntegrityError
 
-from app.models.entities import Site
+from app.models.entities import Site, Tenant
 from app.services.generic_service import GenericService
 from app.services.service_factory import service_factory
 
@@ -20,8 +20,7 @@ from app.schemas.site_schema import (
 
 from app.core.auth.dependencies import require_access_token
 # router = APIRouter(prefix="/api/v1/sites", tags=["Sites"], dependencies=[Depends(require_access_token())])
-router = APIRouter(prefix="/api/v1/sites", tags=["Sites"])
-
+router = APIRouter(prefix="/api/v1/sites", tags=["Sites"],dependencies=[Depends(require_access_token())])
 
 async def get_site_service() -> GenericService[Site]:
     return service_factory.get(Site)
@@ -104,3 +103,30 @@ async def delete_site(
     if deleted == 0:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Site not found")
     return {"deleted": deleted}
+
+
+@router.get("/{tenant_id}/sites", response_model=SitePage)
+async def list_sites_by_tenant(
+    tenant_id: UUID,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(200, ge=1, le=200),
+    q: Optional[str] = Query(None, description="Search (icontains)"),
+    order_by: Optional[Sequence[str]] = Query(None, description='Order fields, e.g: ["name","-created_at"]'),
+    svc: GenericService[Site] = Depends(get_site_service),
+):
+    filters: dict = {"tenant_id": tenant_id}
+
+    if q:
+        filters["name__icontains"] = q
+
+    result = await svc.list_paginated(
+        page=page,
+        page_size=page_size,
+        order_by=order_by,
+        **filters,
+    )
+
+    return SitePage(
+        items=[SiteOut.model_validate(x) for x in result.items],
+        meta=PageMeta(total=result.total, page=result.page, page_size=result.page_size, pages=result.pages),
+    )

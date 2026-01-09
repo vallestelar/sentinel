@@ -215,34 +215,50 @@ async function fetchSitesForTenantSelect(tenantId) {
     return _sitesByTenantCacheForDevices.get(tenantId);
   }
 
-  // 1) Intento ideal: backend filtra por tenant_id
-  let res = null;
+  // 1) Intento 1: endpoint nuevo (nested)
+  //    /api/v1/tenants/{tenantId}/sites?page=1&page_size=200
   try {
-    res = await apiFetch(
-      `/sites/?page=1&page_size=200&tenant_id=${encodeURIComponent(tenantId)}`,
+    const res = await apiFetch(
+      `/sites/${encodeURIComponent(tenantId)}/sites?page=1&page_size=200`,
       { method: "GET" }
     );
-  } catch {
-    res = null;
+
+    const list = Array.isArray(res) ? res : (res?.items || []);
+    const mapped = list
+      .filter((s) => s && s.id)
+      .map((s) => ({ id: s.id, name: s.name || s.id }));
+
+    _sitesByTenantCacheForDevices.set(tenantId, mapped);
+    return mapped;
+  } catch (e) {
+    // Si NO es 404, no hacemos fallback silencioso:
+    // mostramos el error real (evita esconder problemas de auth/500/etc.)
+    const msg = (e?.message || "").toLowerCase();
+    const is404 =
+      msg.includes("404") ||
+      msg.includes("not found") ||
+      msg.includes("no encontrado");
+
+    if (!is404) throw e;
   }
 
-  let list = [];
-  if (res) {
-    list = Array.isArray(res) ? res : (res?.items || []);
-  } else {
-    // 2) Fallback: traer y filtrar cliente
-    const resAll = await apiFetch(`/sites/?page=1&page_size=200`, { method: "GET" });
-    const all = Array.isArray(resAll) ? resAll : (resAll?.items || []);
-    list = all.filter((s) => (s?.tenant_id || "") === tenantId);
-  }
+  // 2) Fallback: endpoint clásico por query param
+  //    /api/v1/sites/?tenant_id=...&page=1&page_size=200
+  const res2 = await apiFetch(
+    `/sites/?tenant_id=${encodeURIComponent(tenantId)}&page=1&page_size=200`,
+    { method: "GET" }
+  );
 
-  const mapped = list
+  const list2 = Array.isArray(res2) ? res2 : (res2?.items || []);
+  const mapped2 = list2
     .filter((s) => s && s.id)
     .map((s) => ({ id: s.id, name: s.name || s.id }));
 
-  _sitesByTenantCacheForDevices.set(tenantId, mapped);
-  return mapped;
+  _sitesByTenantCacheForDevices.set(tenantId, mapped2);
+  return mapped2;
 }
+
+
 
 async function fillSitesSelect(selectEl, tenantId, selectedSiteId = "") {
   if (!tenantId) {

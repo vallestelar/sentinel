@@ -20,7 +20,7 @@ from app.schemas.device_schema import (
 
 from app.core.auth.dependencies import require_access_token
 # router = APIRouter(prefix="/api/v1/devices", tags=["Devices"], dependencies=[Depends(require_access_token())])
-router = APIRouter(prefix="/api/v1/devices", tags=["Devices"])
+router = APIRouter(prefix="/api/v1/devices", tags=["Devices"],dependencies=[Depends(require_access_token())])
 
 
 async def get_device_service() -> GenericService[Device]:

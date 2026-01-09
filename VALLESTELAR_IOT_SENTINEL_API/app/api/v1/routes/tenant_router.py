@@ -5,8 +5,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from tortoise.exceptions import IntegrityError
-
 from app.models.entities import Tenant
+
 from app.services.generic_service import GenericService
 from app.services.service_factory import service_factory
 
@@ -17,6 +17,7 @@ from app.schemas.tenant_schema import (
     TenantPage,
     PageMeta,
 )
+
 
 from app.core.auth.dependencies import require_access_token
 router = APIRouter(prefix="/api/v1/tenants", tags=["Tenants"],dependencies=[Depends(require_access_token())])
@@ -103,3 +104,5 @@ async def delete_tenant(
     if deleted == 0:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tenant not found")
     return {"deleted": deleted}
+
+
