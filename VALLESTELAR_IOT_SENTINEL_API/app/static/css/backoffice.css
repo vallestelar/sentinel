@@ -653,3 +653,27 @@
 }
 
 
+/* ======================================================
+   SENSOR ENABLED ICONS – Pastel style (enabled/disabled)
+   ====================================================== */
+
+/* Contenedor común */
+.bo-app .tabulator .tabulator-cell .bo-status-icon {
+  font-size: 0.95rem;
+}
+
+/* ENABLED → verde pastel */
+.bo-app .tabulator .tabulator-cell .bo-sensor-enabled {
+  color: #6fcf97 !important;
+}
+
+/* DISABLED → rojo pastel */
+.bo-app .tabulator .tabulator-cell .bo-sensor-disabled {
+  color: #eb8c8c !important;
+}
+
+/* Estado desconocido */
+.bo-app .tabulator .tabulator-cell .bo-sensor-unknown {
+  color: #9bb6d6 !important;
+  opacity: 0.75;
+}

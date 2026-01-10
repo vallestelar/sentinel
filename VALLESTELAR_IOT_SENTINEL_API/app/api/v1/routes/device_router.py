@@ -104,3 +104,34 @@ async def delete_device(
     if deleted == 0:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Device not found")
     return {"deleted": deleted}
+
+
+@router.get("/{site_id}/devices", response_model=DevicePage)
+async def list_devices_by_site(
+    site_id: UUID,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(200, ge=1, le=200),
+    q: Optional[str] = Query(None, description="Search (icontains)"),
+    order_by: Optional[Sequence[str]] = Query(None, description='Order fields, e.g: ["name","-created_at"]'),
+    svc: GenericService[Device] = Depends(get_device_service),
+):
+    filters: dict = {"site_id": site_id}
+    if q:
+        filters["name__icontains"] = q
+
+    result = await svc.list_paginated(
+        page=page,
+        page_size=page_size,
+        order_by=order_by,
+        **filters,
+    )
+
+    return DevicePage(
+        items=[DeviceOut.model_validate(x) for x in result.items],
+        meta=PageMeta(
+            total=result.total,
+            page=result.page,
+            page_size=result.page_size,
+            pages=result.pages,
+        ),
+    )

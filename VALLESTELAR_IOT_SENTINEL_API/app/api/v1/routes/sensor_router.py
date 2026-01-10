@@ -104,3 +104,6 @@ async def delete_sensor(
     if deleted == 0:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sensor not found")
     return {"deleted": deleted}
+
+
+

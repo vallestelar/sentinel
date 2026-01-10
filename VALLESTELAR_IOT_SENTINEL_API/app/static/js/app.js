@@ -51,6 +51,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 ? renderDeviceView(c)
                 : renderPlaceholder(c, "devices"))),
   },
+    sensors: {
+    title: "Sensors",
+    render: (c) =>
+      typeof renderSensorsView === "function"
+        ? renderSensorsView(c)
+        : (typeof renderSensors === "function"
+            ? renderSensors(c)
+            : (typeof renderSensorView === "function"
+                ? renderSensorView(c)
+                : renderPlaceholder(c, "sensors"))),
+  },
+
 
   };
 
