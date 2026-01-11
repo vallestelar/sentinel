@@ -62,7 +62,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 ? renderSensorView(c)
                 : renderPlaceholder(c, "sensors"))),
   },
-
+    actuators: {
+    title: "Actuators",
+    render: (c) =>
+      typeof renderActuatorsView === "function"
+        ? renderActuatorsView(c)
+        : (typeof renderActuators === "function"
+            ? renderActuators(c)
+            : (typeof renderActuatorView === "function"
+                ? renderActuatorView(c)
+                : renderPlaceholder(c, "actuators"))),
+  },
 
   };
 
