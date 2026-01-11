@@ -73,6 +73,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 ? renderActuatorView(c)
                 : renderPlaceholder(c, "actuators"))),
   },
+    users: {
+    title: "Users",
+    render: (c) =>
+      typeof renderUsersView === "function"
+        ? renderUsersView(c)
+        : (typeof renderUsers === "function"
+            ? renderUsers(c)
+            : (typeof renderUserView === "function"
+                ? renderUserView(c)
+                : renderPlaceholder(c, "users"))),
+    },
 
   };
 
